@@ -6,8 +6,19 @@
     }
 
     $id = $_SESSION['id'];
-    $sql_query_m2t = "SELECT * FROM cms_message WHERE type_id = '3'";
-    $sql_query_mft = "SELECT * FROM cms_message WHERE type_id = '4'";
+    //$sql_query_m2t = "SELECT * FROM cms_message WHERE type_id = '3'";
+    $sql_query_m2t = "SELECT cms_message.message_id as message_id, cms_message.content as content, cms_message.created_date as created_date, cms_message.title as title, cms_message.tutor_id as tutor_id, cms_message.type_id as type_id, cms_message.student_id as student_id, cms_student.firstname as firstname, cms_student.surname as surname, cms_student.email as email
+                          FROM cms_message
+                          LEFT JOIN cms_student
+                          ON cms_message.student_id=cms_student.student_id
+                          WHERE cms_message.tutor_id = '$id' and type_id = '3'";
+
+    //$sql_query_mft = "SELECT * FROM cms_message WHERE type_id = '4'";
+    $sql_query_mft = "SELECT cms_message.message_id as message_id, cms_message.content as content, cms_message.created_date as created_date, cms_message.title as title, cms_message.tutor_id as tutor_id, cms_message.type_id as type_id, cms_message.student_id as student_id, cms_student.firstname as firstname, cms_student.surname as surname, cms_student.email as email
+                          FROM cms_message
+                          LEFT JOIN cms_student
+                          ON cms_message.student_id=cms_student.student_id
+                          WHERE cms_message.tutor_id = '$id' and type_id = '4'";
 
     $result_m2t = mysqli_query($con,$sql_query_m2t);
     $result_mft = mysqli_query($con,$sql_query_mft);
@@ -16,7 +27,7 @@ mysqli_close($con);
 ?>
 <html>
 <head>
-    <title>Meeting</title>
+    <title>Message</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
     <meta name="description" content=""/>
     <meta name="keywords" content=""/>
@@ -29,7 +40,7 @@ mysqli_close($con);
     <script src="../js/skel.min.js"></script>
     <script src="../js/skel-panels.min.js"></script>
     <script src="../js/init.js"></script>
-    <link rel="stylesheet" href="../css/blue/style.css">
+    <link rel="stylesheet" href="../css/theme.ice.css"/>
     <noscript>
         <link rel="stylesheet" href="../css/skel-noscript.css"/>
         <link rel="stylesheet" href="../css/style.css"/>
@@ -40,22 +51,34 @@ mysqli_close($con);
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="../css/ie8.css"/><![endif]-->
     <style>
-        #tableM2t th:nth-child(1), th:nth-child(5), th:nth-child(6), th:nth-child(7){
+        #tableM2t th:nth-child(1), th:nth-child(6), th:nth-child(7){
             display: none;
         }
-        #tableM2t td:nth-child(1), td:nth-child(5), td:nth-child(6), td:nth-child(7){
+        #tableM2t td:nth-child(1), td:nth-child(6), td:nth-child(7){
             display: none;
         }
 
-        #tableMft th:nth-child(1), th:nth-child(5), th:nth-child(6), th:nth-child(7){
+        #tableMft th:nth-child(1), th:nth-child(6), th:nth-child(7){
             display: none;
         }
-        #tableMft td:nth-child(1), td:nth-child(5), td:nth-child(6), td:nth-child(7){
+        #tableMft td:nth-child(1), td:nth-child(6), td:nth-child(7){
             display: none;
         }
 
         p {
             margin-bottom: 0px;
+        }
+
+        .inWeek{
+            background: rgb(153, 255, 153);
+        }
+
+        .overWeek{
+            background: rgb(255, 255, 204);
+        }
+
+        .overMonth{
+            background: rgb(255, 204, 255);
         }
     </style>
 </head>
@@ -120,19 +143,18 @@ mysqli_close($con);
     <section id="message" class="one">
 
         <div class="container">
-            <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
-
+            <header><h2 style="margin-top: 30px;">Messages</h2></header>
             <div class="row">
-                <div class="6u">
+                <div class="12u">
                     <p>Messages from student</p>
                     <table id="tableM2t" class="tablesorter">
                         <thead>
                         <tr>
                             <th>Id</th>
+                            <th>Student Name</th>
                             <th>Title</th>
                             <th>Content</th>
                             <th>Created Date</th>
-                            <th>Student Id</th>
                             <th>Tutor Id</th>
                             <th>Type Id</th>
                         </tr>
@@ -143,10 +165,10 @@ mysqli_close($con);
                         {
                             echo "<tr>";
                             echo "<td>". $row['message_id'] ."</td>";
+                            echo "<td studentId='".$row['student_id']."'>". $row['firstname'] . $row['surname']."</td>";
                             echo "<td>". $row['title'] ."</td>";
                             echo "<td>". $row['content'] ."</td>";
                             echo "<td>". $row['created_date'] ."</td>";
-                            echo "<td>". $row['student_id'] ."</td>";
                             echo "<td>". $row['tutor_id'] ."</td>";
                             echo "<td>". $row['type_id'] ."</td>";
                             echo "</tr>";
@@ -155,16 +177,18 @@ mysqli_close($con);
                         </tbody>
                     </table>
                 </div>
-                <div class="6u">
+            </div>
+            <div class="row">
+                <div class="12u">
                     <p>Messages to student</p>
                     <table id="tableMft" class="tablesorter">
                         <thead>
                         <tr>
                             <th>Id</th>
+                            <th>Student Name</th>
                             <th>Title</th>
                             <th>Content</th>
                             <th>Created Date</th>
-                            <th>Student Id</th>
                             <th>Tutor Id</th>
                             <th>Type Id</th>
                         </tr>
@@ -175,10 +199,10 @@ mysqli_close($con);
                         {
                             echo "<tr>";
                             echo "<td>". $row['message_id'] ."</td>";
+                            echo "<td studentId='".$row['student_id']."'>". $row['firstname'] . $row['surname']."</td>";
                             echo "<td>". $row['title'] ."</td>";
                             echo "<td>". $row['content'] ."</td>";
                             echo "<td>". $row['created_date'] ."</td>";
-                            echo "<td>". $row['student_id'] ."</td>";
                             echo "<td>". $row['tutor_id'] ."</td>";
                             echo "<td>". $row['type_id'] ."</td>";
                             echo "</tr>";
@@ -188,7 +212,19 @@ mysqli_close($con);
                     </table>
                 </div>
             </div>
-
+            <div class="row">
+                <div class="2u"></div>
+                <div class="8u">
+                    <table style="font-size: 15px;">
+                        <tr style="text-align: center;color: black">
+                            <td class="overMonth">Over 1 Month</td>
+                            <td class="overWeek">Over 1 Week</td>
+                            <td class="inWeek">With a week</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="2u"></div>
+            </div>
         </div>
     </section>
 
@@ -208,8 +244,38 @@ mysqli_close($con);
 </div>
 <script>
     $(document).ready(function() {
-        $("#tableM2t").tablesorter({sortList:[[0,0]], widgets: ['zebra']});
-        $("#tableMft").tablesorter({sortList:[[0,0]], widgets: ['zebra']});
+        $("#tableM2t").tablesorter({theme:'ice',widthFixed: false, sortList:[[4,1]]});
+        $("#tableMft").tablesorter({theme:'ice',widthFixed: false, sortList:[[4,1]]});
+
+        $('#tableM2t > tbody > tr').each(function() {
+            var created_date = new Date($(this).find('td:eq(4)').text());
+            var one_day = 1000*60*60*24;
+
+            var nDifference = Math.round((Math.abs(new Date() - created_date))/one_day);
+            console.log(nDifference);
+            if(nDifference <= 7){
+                $(this).addClass("inWeek");
+            }else if(nDifference > 7 && nDifference <= 31){
+                $(this).addClass("overWeek");
+            }else if(nDifference > 31){
+                $(this).addClass("overMonth");
+            }
+        });
+
+        $('#tableMft > tbody > tr').each(function() {
+            var created_date = new Date($(this).find('td:eq(4)').text());
+            var one_day = 1000*60*60*24;
+
+            var nDifference = Math.round((Math.abs(new Date() - created_date))/one_day);
+            console.log(nDifference);
+            if(nDifference <= 7){
+                $(this).addClass("inWeek");
+            }else if(nDifference > 7 && nDifference <= 31){
+                $(this).addClass("overWeek");
+            }else if(nDifference > 31){
+                $(this).addClass("overMonth");
+            }
+        });
     });
 </script>
 </body>

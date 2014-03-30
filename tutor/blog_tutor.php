@@ -6,8 +6,12 @@
     }
 
     $id = $_SESSION['id'];
-    $sql_query_blog = "SELECT * FROM cms_message WHERE type_id = '1'";
-
+    //$sql_query_blog = "SELECT * FROM cms_message WHERE type_id = '1'";
+    $sql_query_blog = "SELECT cms_message.message_id as message_id, cms_message.content as content, cms_message.created_date as created_date, cms_message.title as title, cms_message.tutor_id as tutor_id, cms_message.type_id as type_id, cms_message.student_id as student_id, cms_student.firstname as firstname, cms_student.surname as surname
+                       FROM cms_message
+                       LEFT JOIN cms_student
+                       ON cms_message.student_id=cms_student.student_id
+                       WHERE cms_message.tutor_id = '$id' and type_id = '1'";
     $result_blog = mysqli_query($con,$sql_query_blog);
 
     mysqli_close($con);
@@ -27,7 +31,7 @@
     <script src="../js/skel.min.js"></script>
     <script src="../js/skel-panels.min.js"></script>
     <script src="../js/init.js"></script>
-    <link rel="stylesheet" href="../css/blue/style.css">
+    <link rel="stylesheet" href="../css/theme.ice.css"/>
     <noscript>
         <link rel="stylesheet" href="../css/skel-noscript.css"/>
         <link rel="stylesheet" href="../css/style.css"/>
@@ -37,6 +41,19 @@
     <link rel="stylesheet" href="../css/ie9.css"/><![endif]-->
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="../css/ie8.css"/><![endif]-->
+    <style>
+        .inWeek{
+            background: rgb(153, 255, 153);
+        }
+
+        .overWeek{
+            background: rgb(255, 255, 204);
+        }
+
+        .overMonth{
+            background: rgb(255, 204, 255);
+        }
+    </style>
 </head>
 <body>
 
@@ -97,39 +114,54 @@
 
     <!-- Blog -->
     <section id="blog" class="one">
-
+        <header><h2 style="margin-top: 30px;">Blog</h2></header>
         <div class="container">
-            <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
-
-            <table id="mytable" class="tablesorter">
-                <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Title</th>
-                    <th>Content</th>
-                    <th>Created Date</th>
-                    <th>Student Id</th>
-                    <th>Tutor Id</th>
-                    <th>Type Id</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                while($row = mysqli_fetch_array($result_blog))
-                    {
-                        echo "<tr>";
-                        echo "<td>". $row['message_id'] ."</td>";
-                        echo "<td>". $row['title'] ."</td>";
-                        echo "<td>". $row['content'] ."</td>";
-                        echo "<td>". $row['created_date'] ."</td>";
-                        echo "<td>". $row['student_id'] ."</td>";
-                        echo "<td>". $row['tutor_id'] ."</td>";
-                        echo "<td>". $row['type_id'] ."</td>";
-                        echo "</tr>";
-                    }
-                ?>
-                </tbody>
-            </table>
+            <div class="row">
+                <div class="12u">
+                    <table id="mytable" class="tablesorter">
+                        <thead>
+                        <tr>
+                            <th style="display: none;">Id</th>
+                            <th>Title</th>
+                            <th>Content</th>
+                            <th>Created Date</th>
+                            <th>Student Name</th>
+                            <th style="display: none;">Tutor Id</th>
+                            <th style="display: none;">Type Id</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        while($row = mysqli_fetch_array($result_blog))
+                        {
+                            echo "<tr>";
+                            echo "<td style=\"display: none;\">". $row['message_id'] ."</td>";
+                            echo "<td>". $row['title'] ."</td>";
+                            echo "<td>". $row['content'] ."</td>";
+                            echo "<td>". $row['created_date'] ."</td>";
+                            echo "<td studentId='".$row['student_id']."'>". $row['firstname'] . $row['surname'] ."</td>";
+                            echo "<td style=\"display: none;\">". $row['tutor_id'] ."</td>";
+                            echo "<td style=\"display: none;\">". $row['type_id'] ."</td>";
+                            echo "</tr>";
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="2u"></div>
+                <div class="8u">
+                    <table style="font-size: 15px;">
+                        <tr style="text-align: center;color: black">
+                            <td class="overMonth">Over 1 Month</td>
+                            <td class="overWeek">Over 1 Week</td>
+                            <td class="inWeek">With a week</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="2u"></div>
+            </div>
         </div>
     </section>
 
@@ -149,7 +181,22 @@
 </div>
 <script>
     $(document).ready(function() {
-        $("#mytable").tablesorter({sortList:[[0,0]], widgets: ['zebra']});
+        $("#mytable").tablesorter({theme:'ice',widthFixed: false, sortList:[[3,1]]});
+
+        $('#mytable > tbody > tr').each(function() {
+            var created_date = new Date($(this).find('td:eq(3)').text());
+            var one_day = 1000*60*60*24;
+
+            var nDifference = Math.round((Math.abs(new Date() - created_date))/one_day);
+            console.log(nDifference);
+            if(nDifference <= 7){
+                $(this).addClass("inWeek");
+            }else if(nDifference > 7 && nDifference <= 31){
+                $(this).addClass("overWeek");
+            }else if(nDifference > 31){
+                $(this).addClass("overMonth");
+            }
+        });
     });
 </script>
 </body>

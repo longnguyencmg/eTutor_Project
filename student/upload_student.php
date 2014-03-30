@@ -153,7 +153,7 @@
     <section id="upload" class="one">
 
         <div class="container">
-            <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
+            <header><h2 style="margin-top: 30px;">Upload</h2></header>
             <input type="text" id="txtTutorId" value="<?php echo $tutorId ?>" style="display: none;">
             <input type="text" id="txtStudentId" value="<?php echo $id ?>" style="display: none;">
 
@@ -167,7 +167,7 @@
                     <th style="display: none;">Student Id</th>
                     <th>Upload date</th>
                     <th>Comment</th>
-                    <th>Comment By</th>
+                    <th style="display: none;">Comment By</th>
                     <th>Comment date</th>
                 </tr>
                 </thead>
@@ -175,14 +175,14 @@
                 <?php
                 while ($row = mysqli_fetch_array($result_upload)) {
                     echo "<tr>";
-                    echo "<td style=\"display: none;\">" . $row['file_id'] . "</td>";
-                    echo "<td><a href=..".$row['file_path'].">" . $row['file_name'] . "</a></td>";
-                    echo "<td style=\"display: none;\">" . $row['file_path'] . "</td>";
-                    echo "<td style=\"display: none;\">" . $row['student_id'] . "</td>";
-                    echo "<td>" . $row['upload_date'] . "</td>";
-                    echo "<td>" . $row['comment'] . "</td>";
-                    echo "<td>" . $row['comment_by'] . "</td>";
-                    echo "<td>" . $row['comment_date'] . "</td>";
+                        echo "<td style=\"display: none;\">" . $row['file_id'] . "</td>";
+                        echo "<td><a href=..".(str_replace(" ","%20",$row['file_path'])).">" . $row['file_name'] . "</a></td>";
+                        echo "<td style=\"display: none;\">" . $row['file_path'] . "</td>";
+                        echo "<td style=\"display: none;\">" . $row['student_id'] . "</td>";
+                        echo "<td>" . $row['upload_date'] . "</td>";
+                        echo "<td>" . $row['comment'] . "</td>";
+                        echo "<td style=\"display: none;\">" . $row['comment_by'] . "</td>";
+                        echo "<td>" . $row['comment_date'] . "</td>";
                     echo "</tr>";
                 }
                 ?>
@@ -235,9 +235,7 @@
 </div>
 <script>
     $(document).ready(function () {
-        $("#mytable").tablesorter({theme: 'ice', widthFixed: false, sortList: [
-            [1, 0]
-        ], widgets: ['zebra']});
+        $("#mytable").tablesorter({theme: 'ice', widthFixed: false, sortList: [[1, 0]], widgets: ['zebra']});
 
         var isShowAddRequest = false;
         var fullDate = new Date();
@@ -248,11 +246,23 @@
         var currentDate = fullDate.getFullYear() + "-" + twoDigitMonth + "-" + twoDigitDate;
         console.log(currentDate);
 
+        function S4() {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+
+        // Generate a pseudo-GUID by concatenating random hexadecimal.
+        function guid() {
+            return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4()
+                + S4() + S4());
+        };
+        function randomString() {
+            return guid();
+        }
 
         function handleUpload() {
-            var fileId = 1;
+            var fileId = randomString();
             var fileName = $("#file1").val().substring($("#file1").val().lastIndexOf("\\")+1, $("#file1").val().length);
-            var filePath = "/uploads/"+ fileName;
+            var filePath = "/uploads/"+ encodeURIComponent(fileName);
             var objStudentId = $("#txtStudentId").val();
             var uploadDate = currentDate;
             var comment = "";
@@ -260,21 +270,80 @@
             var commentDate = "";
             fileName = fileName.substring(0, fileName.lastIndexOf("."));
 
-            var row = '<tr><td style=\"display: none;\">' + fileId + '</td><td><a href=..'+filePath+'>' + fileName + '</a></td><td style=\"display: none;\">' + filePath + '</td><td style=\"display: none;\">' + objStudentId + '</td><td>' + uploadDate + '</td><td>' + comment + '</td><td>' + commenyBy + '</td><td>' + commentDate + '</td></tr>',
+            var row = '<tr id="'+fileId+'"><td style=\"display: none;\">' + fileId + '</td><td style="background:#B94C4C;color:#ffffff"><a href=..'+filePath+'>' + fileName + '</a></td><td style=\"display: none;\">' + filePath + '</td><td style=\"display: none;\">' + objStudentId + '</td><td style="background:#B94C4C;color:#ffffff">' + uploadDate + '</td><td style="background:#B94C4C;color:#ffffff">' + comment + '</td><td style=\"display: none;\">' + commenyBy + '</td><td style="background:#B94C4C;color:#ffffff">' + commentDate + '</td></tr>',
                 $row = $(row),
             // resort table using the current sort; set to false to prevent resort, otherwise
             // any other value in resort will automatically trigger the table resort.
                 resort = true;
-            $("#mytable")
-                .find('tbody').append($row)
-                .trigger('addRows', [$row, resort]);
+            $("#mytable").find('tbody').append($row).trigger('addRows', [$row, resort]);
+            $("#mytable").trigger('refreshWidgets');
 
             uploadFileServer(fileId, fileName, filePath, objStudentId, uploadDate, comment, commenyBy, commentDate);
+            sendMailNotification();
+
             $("#uploadFileDiv").slideUp("slow",
                 function () {
                     isShowAddRequest = false;
                 });
+
+            $("#" + fileId).find('td:eq(1)').delay(3000).queue(
+                function() {
+                    $(this).css('background-color', '');
+                    $(this).css('color', '');
+                });
+            $("#" + fileId).find('td:eq(4)').delay(3000).queue(
+                function() {
+                    $(this).css('background-color', '');
+                    $(this).css('color', '');
+                });
+            $("#" + fileId).find('td:eq(5)').delay(3000).queue(
+                function() {
+                    $(this).css('background-color', '');
+                    $(this).css('color', '');
+                });
+            $("#" + fileId).find('td:eq(7)').delay(3000).queue(
+                function() {
+                    $(this).css('background-color', '');
+                    $(this).css('color', '');
+                });
             return false;
+        }
+
+        function sendMailNotification(){
+            var objTitle = "Upload File Notification";
+            var objStudentId = $("#txtStudentId").val();
+            var fileName = $("#file1").val().substring($("#file1").val().lastIndexOf("\\")+1, $("#file1").val().length);
+            var uploadDate = currentDate;
+            var objContent = "Student - "+objStudentId + " uploaded file "+ fileName + " for the coursework" + "\n" + "Date: " + uploadDate;
+            var objTutor_email  = "long.nd144@gmail.com";
+
+            sendEmail2Tutor(objTitle, objContent, objTutor_email);
+        }
+
+
+        function sendEmail2Tutor(title, content, receiver)
+        {
+            var xhr;
+            if (window.XMLHttpRequest) {
+                xhr = new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            var data = "title=" + title + "&content=" + content + "&receiver=" + receiver;
+            xhr.open("POST", "../handler/MailHandler.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+            xhr.onreadystatechange = display_data;
+            function display_data() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        //alert(xhr.responseText);
+                        //document.getElementById("suggestion").innerHTML = xhr.responseText;
+                    } else {
+                        alert('There was a problem with the request.');
+                    }
+                }
+            }
         }
 
         $("#uploadFileBtn").click(

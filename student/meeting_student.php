@@ -167,7 +167,7 @@
     <section id="meeting" class="one">
 
         <div class="container">
-            <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
+            <header><h2 style="margin-top: 30px;">Meeting Request</h2></header>
             <input type="text" id="txtTutorId" value="<?php echo $tutorId ?>" style="display: none;">
             <input type="text" id="txtStudentId" value="<?php echo $id ?>" style="display: none;">
             <div class="row">
@@ -176,13 +176,13 @@
                     <table id="mytable" class="tablesorter">
                         <thead>
                         <tr>
-                            <th>Id</th>
+                            <th style="display: none;">Id</th>
                             <th>Title</th>
                             <th>Content</th>
                             <th>Created Date</th>
-                            <th>Student Id</th>
-                            <th>Tutor Id</th>
-                            <th>Type Id</th>
+                            <th style="display: none;">Student Id</th>
+                            <th style="display: none;">Tutor Id</th>
+                            <th style="display: none;">Type Id</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -190,13 +190,13 @@
                         while($row = mysqli_fetch_array($result_meeting))
                         {
                             echo "<tr>";
-                            echo "<td>". $row['message_id'] ."</td>";
-                            echo "<td>". $row['title'] ."</td>";
-                            echo "<td>". $row['content'] ."</td>";
-                            echo "<td>". $row['created_date'] ."</td>";
-                            echo "<td>". $row['student_id'] ."</td>";
-                            echo "<td>". $row['tutor_id'] ."</td>";
-                            echo "<td>". $row['type_id'] ."</td>";
+                                echo "<td style='display:none;'>". $row['message_id'] ."</td>";
+                                echo "<td>". $row['title'] ."</td>";
+                                echo "<td>". $row['content'] ."</td>";
+                                echo "<td>". $row['created_date'] ."</td>";
+                                echo "<td style='display:none;'>". $row['student_id'] ."</td>";
+                                echo "<td style='display:none;'>". $row['tutor_id'] ."</td>";
+                                echo "<td style='display:none;'>". $row['type_id'] ."</td>";
                             echo "</tr>";
                         }
                         ?>
@@ -233,12 +233,15 @@
                         </tr>
                         <tr>
                             <td style="color: #659492">Content</td>
-                            <td><textarea rows="4" id="txtContent">Detail information of location and time</textarea></td>
+                            <td><textarea rows="3" id="txtContent">Detail information of location and time</textarea></td>
                         </tr>
                     </tbody>
                 </table>
-                <a id="btnAdd" class="button">Add</a>
-                <a id="btnCancel" class="button">Cancel</a>
+                <div style="margin-top: -40px;height: 60px;"><p id="status" style="font-size: 14px;margin-left: 6px;width: 380px;"></p></div>
+                <div>
+                    <a id="btnAdd" class="button">Add</a>
+                    <a id="btnCancel" class="button">Cancel</a>
+                </div>
             </div>
         </div>
     </section>
@@ -259,8 +262,8 @@
 </div>
 <script>
     $(document).ready(function() {
-        $("#mytable").tablesorter({theme:'ice',widthFixed: false, sortList:[[0,0]], widgets: ['zebra']})
-            .tablesorterPager({container: $("#pager")}); ;
+        $("#mytable").tablesorter({theme:'ice',widthFixed: false, sortList:[[3,1]], widgets: ['zebra']})
+            .tablesorterPager({container: $("#pager")});
         var isShowAddRequest = false;
         var count = 1;
 
@@ -272,33 +275,69 @@
         var currentDate = fullDate.getFullYear()+ "-" + twoDigitMonth + "-" + twoDigitDate ;
         console.log(currentDate);
 
+        function S4() {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+
+        // Generate a pseudo-GUID by concatenating random hexadecimal.
+        function guid() {
+            return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4()
+                + S4() + S4());
+        };
+        function randomString() {
+            return guid();
+        }
+
 
         $("#btnAdd").click(function(){
             // add two rows
-            var objId = 31 + count;
+            var objId = randomString();
             var objTitle = $("#txtAgenda").val();
             var objContent = $("#txtContent").val();
             var objDate = currentDate;
             var objStudentId = $("#txtStudentId").val();
             var objTutor = $("#txtTutorId").val();
             var objTypeId = 2;
+            var objTutor_email = "long.nd144@gmail.com";
 
-            var row = '<tr><td>'+objId+'</td><td>'+objTitle+'</td><td>'+objContent+'</td><td>'+objDate+'</td><td>'+objStudentId+'</td><td>'+objTutor+'</td><td>'+objTypeId+'</td></tr>',
-                $row = $(row),
-            // resort table using the current sort; set to false to prevent resort, otherwise
-            // any other value in resort will automatically trigger the table resort.
-                resort = true;
-            $("#mytable")
-                .find('tbody').append($row)
-                .trigger('addRows', [$row, resort]);
+            if((objTitle != null && objTitle.length > 0) && (objContent != null && objContent.length > 0)){
+                var row = '<tr id='+objId+'><td style="display:none;">'+objId+'</td><td style="background:#B94C4C;color:#ffffff">'+objTitle+'</td><td style="background:#B94C4C;color:#ffffff">'+objContent+'</td><td style="background:#B94C4C;color:#ffffff">'+objDate+'</td><td style="display:none;">'+objStudentId+'</td><td style="display:none;">'+objTutor+'</td><td style="display:none;">'+objTypeId+'</td></tr>',
+                    $row = $(row),
+                // resort table using the current sort; set to false to prevent resort, otherwise
+                // any other value in resort will automatically trigger the table resort.
+                    resort = true;
+                $("#mytable").find('tbody').append($row).trigger('addRows', [$row, resort]);
+                $("#mytable").trigger('refreshWidgets');
 
-            count ++;
-            sendAddMeetingRequest(objId, objTitle, objContent, objDate, objStudentId, objTutor, objTypeId);
-            $("#addRequestMeeting").slideUp("slow",
-                function() {
-                    isShowAddRequest = false;
-            });
-            return false;
+                sendAddMeetingRequest(objId, objTitle, objContent, objDate, objStudentId, objTutor, objTypeId);
+                sendEmail2Tutor(objTitle, objContent, objTutor_email);
+                $("#addRequestMeeting").slideUp("slow",
+                    function() {
+                        isShowAddRequest = false;
+                    });
+
+                $("#" + objId).find('td:eq(1)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                $("#" + objId).find('td:eq(2)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                $("#" + objId).find('td:eq(3)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                return false;
+            } else {
+                document.getElementById("status").innerHTML = "Please fill in field Agenda/Content";
+                document.getElementById("status").style.color = "#ff0000";
+            }
+
+
         });
 
         $("#makeRequest").click(
@@ -337,6 +376,7 @@
             $("#addRequestMeeting").slideUp("fast",
                 function() {
                     isShowAddRequest = false;
+                    document.getElementById("status").innerHTML = "";
             });
         });
 
@@ -350,6 +390,31 @@
             }
             var data = "id=" + id + "&title=" + title + "&content=" + content + "&date=" + date + "&studentId=" + studentId + "&tutorId=" + tutorId + "&typeId=" + typeId;
             xhr.open("POST", "../handler/AddMeetingRequest.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+            xhr.onreadystatechange = display_data;
+            function display_data() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        //alert(xhr.responseText);
+                        //document.getElementById("suggestion").innerHTML = xhr.responseText;
+                    } else {
+                        alert('There was a problem with the request.');
+                    }
+                }
+            }
+        }
+
+        function sendEmail2Tutor(title, content, receiver)
+        {
+            var xhr;
+            if (window.XMLHttpRequest) {
+                xhr = new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            var data = "title=" + title + "&content=" + content + "&receiver=" + receiver;
+            xhr.open("POST", "../handler/MailHandler.php", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.send(data);
             xhr.onreadystatechange = display_data;

@@ -68,28 +68,27 @@ mysqli_close($con);
             display: inherit;
         }
 
-        #sendMesageDiv{
+        #sendMessageDiv{
             height: 250px;
             width: 403px;
             background-image: url("../css/images/userBoxAdd.png");
             position: absolute;
             display: none;
-            margin-left: 40px;
         }
 
-        #tblsendMesage{
+        #tblSendMessage{
             font-size: 15px;
             width: 350px;
-            margin-left: -20px;
+            margin-left: 20px;
             margin-top: 40px;
         }
 
-        #tblsendMesage input,textarea{
+        #tblSendMessage input,textarea{
             font-size: 14px;
             width: 100%;
         }
 
-        #tblsendMesage textarea{
+        #tblSendMessage textarea{
             vertical-align: top;
         }
 
@@ -171,13 +170,13 @@ mysqli_close($con);
     <section id="message" class="one">
 
         <div class="container">
-            <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
+            <header><h2 style="margin-top: 30px;">Messages</h2></header>
             <input type="text" id="txtTutorId" value="<?php echo $tutorId ?>" style="display: none;">
             <input type="text" id="txtStudentId" value="<?php echo $id ?>" style="display: none;">
 
             <div><a id="addMessage" class="button">Add Message</a></div>
             <div class="row">
-                <div class="6u">
+                <div class="12u">
                     <p>Messages to Tutor</p>
                     <table id="tableM2t" class="tablesorter">
                         <thead>
@@ -209,7 +208,9 @@ mysqli_close($con);
                         </tbody>
                     </table>
                 </div>
-                <div class="6u">
+            </div>
+            <div class="row">
+                <div class="12u">
                     <p>Messages from Tutor</p>
                     <table id="tableMft" class="tablesorter">
                         <thead>
@@ -241,8 +242,9 @@ mysqli_close($con);
                         </tbody>
                     </table>
                 </div>
-                <div id="sendMesageDiv">
-                    <table id="tblSendMesage">
+            </div>
+                <div id="sendMessageDiv">
+                    <table id="tblSendMessage">
                         <tbody>
                         <tr>
                             <td style="color: #659492">Title</td>
@@ -250,12 +252,15 @@ mysqli_close($con);
                         </tr>
                         <tr>
                             <td style="color: #659492">Content</td>
-                            <td><textarea rows="4" id="txtContent">Message</textarea></td>
+                            <td><textarea rows="3" id="txtContent">Message</textarea></td>
                         </tr>
                         </tbody>
                     </table>
-                    <a id="btnSend" class="button">Send</a>
-                    <a id="btnCancel" class="button">Cancel</a>
+                    <div style="margin-top: -40px;height: 60px;"><p id="status" style="font-size: 14px;margin-left: -3px;width: 380px;"></p></div>
+                    <div>
+                        <a id="btnSend" class="button">Send</a>
+                        <a id="btnCancel" class="button">Cancel</a>
+                    </div>
                 </div>
             </div>
 
@@ -278,12 +283,10 @@ mysqli_close($con);
 </div>
 <script>
     $(document).ready(function() {
-        var isIE = (navigator.userAgent.match("MSIE"));
-        $("#tableM2t").tablesorter({theme:'ice',widthFixed: false, sortList:[[1,0]], widgets: ['zebra']});
-        $("#tableMft").tablesorter({theme:'ice',widthFixed: false, sortList:[[1,0]], widgets: ['zebra']});
+        $("#tableM2t").tablesorter({theme:'ice',widthFixed: false, sortList:[[3,1]], widgets: ['zebra']});
+        $("#tableMft").tablesorter({theme:'ice',widthFixed: false, sortList:[[3,1]], widgets: ['zebra']});
 
         var isShowAddRequest = false;
-        var count = 1;
 
         var fullDate = new Date();
         var twoDigitMonth = fullDate.getMonth()+1+"";
@@ -293,33 +296,66 @@ mysqli_close($con);
         var currentDate = fullDate.getFullYear()+ "-" + twoDigitMonth + "-" + twoDigitDate ;
         console.log(currentDate);
 
+        function S4() {
+            return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+
+        // Generate a pseudo-GUID by concatenating random hexadecimal.
+        function guid() {
+            return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4()
+                + S4() + S4());
+        };
+        function randomString() {
+            return guid();
+        }
+
 
         $("#btnSend").click(function(){
-            // add two rows
-            var objId = 1;
+
+            var objId = randomString();
             var objTitle = $("#txtTitle").val();
             var objContent = $("#txtContent").val();
             var objDate = currentDate;
             var objStudentId = $("#txtStudentId").val();
             var objTutor = $("#txtTutorId").val();
             var objTypeId = 3;
+            var objTutor_email  = "long.nd144@gmail.com";
 
-            var row = '<tr><td>'+objId+'</td><td>'+objTitle+'</td><td>'+objContent+'</td><td>'+objDate+'</td><td>'+objStudentId+'</td><td>'+objTutor+'</td><td>'+objTypeId+'</td></tr>',
-                $row = $(row),
-            // resort table using the current sort; set to false to prevent resort, otherwise
-            // any other value in resort will automatically trigger the table resort.
-                resort = true;
-            $("#tableM2t")
-                .find('tbody').append($row)
-                .trigger('addRows', [$row, resort]);
+            if((objTitle != null && objTitle.length > 0) && (objContent != null && objContent.length > 0)){
+                var row = '<tr id='+objId+'><td style="display:none;">'+objId+'</td><td style="background:#B94C4C;color:#ffffff">'+objTitle+'</td><td style="background:#B94C4C;color:#ffffff">'+objContent+'</td><td style="background:#B94C4C;color:#ffffff">'+objDate+'</td><td style="display:none;">'+objStudentId+'</td><td style="display:none;">'+objTutor+'</td><td style="display:none;">'+objTypeId+'</td></tr>',
+                    $row = $(row),resort = true;
 
-            count ++;
-            sendMessage2Tutor(objId, objTitle, objContent, objDate, objStudentId, objTutor, objTypeId);
-            $("#sendMesageDiv").slideUp("slow",
-                function() {
-                    isShowAddRequest = false;
-                });
-            return false;
+                $("#tableM2t").find('tbody').append($row).trigger('addRows', [$row, resort]);
+                $("#mytable").trigger('refreshWidgets');
+
+                sendMessage2Tutor(objId, objTitle, objContent, objDate, objStudentId, objTutor, objTypeId);
+                sendEmail2Tutor(objTitle, objContent, objTutor_email);
+                $("#sendMessageDiv").slideUp("slow",
+                    function() {
+                        isShowAddRequest = false;
+                    });
+                $("#" + objId).find('td:eq(1)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                $("#" + objId).find('td:eq(2)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                $("#" + objId).find('td:eq(3)').delay(3000).queue(
+                    function() {
+                        $(this).css('background-color', '');
+                        $(this).css('color', '');
+                    });
+                return false;
+            } else {
+                document.getElementById("status").innerHTML = "Please fill in field Title/Content";
+                document.getElementById("status").style.color = "#ff0000";
+            }
+
+
         });
 
         $("#addMessage").click(
@@ -327,12 +363,12 @@ mysqli_close($con);
                 id = this.id;
                 setAddformPosition(id);
                 if (!isShowAddRequest) {
-                    $("#sendMesageDiv").slideDown("slow",
+                    $("#sendMessageDiv").slideDown("slow",
                         function() {
                             isShowAddRequest = true;
                         });
                 } else {
-                    $("#sendMesageDiv").slideUp("fast",
+                    $("#sendMessageDiv").slideUp("fast",
                         function() {
                             isShowAddRequest = false;
                         });
@@ -341,7 +377,7 @@ mysqli_close($con);
 
         function setAddformPosition(ele) {
             var pos = $("#" + ele).position();
-            $("#sendMesageDiv").css({
+            $("#sendMessageDiv").css({
                 position : "absolute",
                 top : pos.top + 60 + "px"
             });
@@ -355,9 +391,10 @@ mysqli_close($con);
         });
 
         $("#btnCancel").click(function(){
-            $("#sendMesageDiv").slideUp("fast",
+            $("#sendMessageDiv").slideUp("fast",
                 function() {
                     isShowAddRequest = false;
+                    document.getElementById("status").innerHTML = "";
                 });
         });
 
@@ -371,6 +408,31 @@ mysqli_close($con);
             }
             var data = "id=" + id + "&title=" + title + "&content=" + content + "&date=" + date + "&studentId=" + studentId + "&tutorId=" + tutorId + "&typeId=" + typeId;
             xhr.open("POST", "../handler/SendMessage2Tutor.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+            xhr.onreadystatechange = display_data;
+            function display_data() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        //alert(xhr.responseText);
+                        //document.getElementById("suggestion").innerHTML = xhr.responseText;
+                    } else {
+                        alert('There was a problem with the request.');
+                    }
+                }
+            }
+        }
+
+        function sendEmail2Tutor(title, content, receiver)
+        {
+            var xhr;
+            if (window.XMLHttpRequest) {
+                xhr = new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            var data = "title=" + title + "&content=" + content + "&receiver=" + receiver;
+            xhr.open("POST", "../handler/MailHandler.php", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.send(data);
             xhr.onreadystatechange = display_data;

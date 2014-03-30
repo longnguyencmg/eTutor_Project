@@ -129,9 +129,7 @@
     <!-- Intro -->
     <section id="home" class="one">
         <div class="container">
-
             <a href="http://www.gre.ac.uk/‎" class="image featured"><img src="../images/greenwich_uni.jpg" alt=""/></a>
-
             <div class="row">
                 <div class="3u">
                     <div class="content">
@@ -144,7 +142,7 @@
                         </label></div>
                         <a href="blog_student.php"><img src="../images/blog.png"></a>
                     </div>
-                    <p>Blog</p>
+                    <p style="color: cadetblue;">Blog</p>
                 </div>
                 <div class="3u">
                     <div class="content">
@@ -156,7 +154,7 @@
                             </label></div>
                         <a href="meeting_student.php"><img src="../images/Meeting.png"></a>
                     </div>
-                    <p>Meeting Request</p>
+                    <p style="color: cadetblue;">Meeting Requests</p>
                 </div>
                 <div class="3u">
                     <div class="content">
@@ -169,7 +167,7 @@
                         </label></div>
                         <a href="message_student.php"><img src="../images/message.jpg"></a>
                     </div>
-                    <p>Message to tutor</p>
+                    <p style="color: cadetblue;">Messages to tutor</p>
                 </div>
                 <div class="3u">
                     <div class="content">
@@ -182,7 +180,7 @@
                         </label></div>
                         <a href="message_student.php"><img src="../images/message.jpg"></a>
                     </div>
-                    <p>Message from tutor</p>
+                    <p style="color: cadetblue;">Messages from tutor</p>
                 </div>
             </div>
         </div>
